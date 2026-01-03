@@ -1,0 +1,13 @@
+# Grundlegende Anforderungen für das Projekt
+pandas
+numpy
+matplotlib
+seaborn
+requests
+python-dotenv
+influxdb-client
+influxdb  # Für v1 API
+homeassistant-api
+streamlit
+plotly
+altair
