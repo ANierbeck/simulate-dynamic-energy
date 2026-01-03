@@ -11,3 +11,8 @@ homeassistant-api
 streamlit
 plotly
 altair
+
+# Testing requirements
+pytest
+pytest-cov
+python-dateutil
