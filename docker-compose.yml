@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  energy-analysis:
+    build: .
+    container_name: dynamic-energy-analysis
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - TZ=Europe/Berlin
+      - INFLUXDB_URL=http://your-influxdb-server:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - CURRENT_TARIFF=0.30
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# For Raspberry Pi deployment, you can use this alternative service
+# that uses the arm32v7/python image for better compatibility:
+#
+#  energy-analysis-arm:
+#    image: arm32v7/python:3.11-slim
+#    container_name: dynamic-energy-analysis-arm
+#    ... (rest of the configuration remains the same)
