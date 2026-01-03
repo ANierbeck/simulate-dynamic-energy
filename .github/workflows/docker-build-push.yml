@@ -5,6 +5,17 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Set permissions for GITHUB_TOKEN
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -44,20 +55,21 @@ jobs:
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ secrets.GHCR_USERNAME }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
             type=sha
 
       - name: Build and push Docker image
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -66,3 +78,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
